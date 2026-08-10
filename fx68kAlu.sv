@@ -323,11 +323,16 @@ module fx68kAlu ( input clk, pwrUp, enT1, enT3, enT4,
             if (isByte)
             begin
                 result = { {8{ rtemp[8]}}, rtemp[8:1] };
-                cout   = rtemp[9];
+                // rtemp[9] is a SUM bit polluted by the upper-byte operands; the
+                // true byte carry-out is the carry INTO bit 9, recovered by XOR-
+                // removing the two operand bits at position 9. For subtract the
+                // 68000 C/X is the borrow = ~carry.
+                cout   = (rtemp[9] ^ inpb[8] ^ (inpa[8]^bSub)) ^ bSub;
             end
             else begin
                 result = rtemp[16:1];
-                cout   = rtemp[17];
+                // Word/long carry sits cleanly at rtemp[17] (=~borrow for sub).
+                cout   = bSub ? ~rtemp[17] : rtemp[17];
             end
 
             rm  = isByte ? rtemp[8] : rtemp[16];
