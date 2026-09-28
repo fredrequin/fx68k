@@ -2,8 +2,8 @@
 // FX68K
 //
 // M68000 cycle accurate, fully synchronous
-// Copyright (c) 2018 by Jorge Cwik
-//
+// Copyright (c) 2018,2021 by Jorge Cwik
+// 
 // TODO:
 // - Everything except bus retry already implemented.
 
@@ -83,7 +83,7 @@
 	Define USE_E_CLKEN will output two signals that generate a single cycle pulse just before the raising and falling edges of E.
 	Use this when you need to generate changes that must be simultaneous with these edges.
 	Most systems don't need this. Note that these signals are not registered. 
- */
+*/
 
 // Define this to run a self contained compilation test build
 // `define FX68K_TEST
@@ -2114,9 +2114,11 @@ endmodule
 // Also checks for illegal opcode and priv violation
 
 // This is one of the slowest part of the processor.
-// But no need to optimize or pipeline because the result is not needed until at least 4 cycles.
+// But no need to optimize or pipeline because the result for a1-a3 is not needed until at least 4 cycles.
 // IR updated at the least one microinstruction earlier.
 // Just need to configure the timing analizer correctly.
+// isPriv, isIllegal might be needed as soon as two cycles later
+
 
 module uaddrDecode
 (
