@@ -1739,7 +1739,7 @@ localparam
     // Main A/D registers
     
     wire [15:0] wRxh_t2 = (iNanoDec_t4.dbh2rxh) ? rDbh_t2 : rAbh_t2;
-    wire [15:0] wRxl_t2 = (rRyIsAreg_t4)
+    wire [15:0] wRxl_t2 = (rRxIsAreg_t4)
                         ? ((iNanoDec_t4.dbl2rxl) ? rDbl_t2 : rAbl_t2)
                         : ((iNanoDec_t4.dbl2rxl) ? rDbd_t2 : rAbd_t2);
     

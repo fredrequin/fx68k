@@ -323,11 +323,11 @@ module fx68kAlu ( input clk, pwrUp, enT1, enT3, enT4,
             if (isByte)
             begin
                 result = { {8{ rtemp[8]}}, rtemp[8:1] };
-                cout   = rtemp[9];
+                cout   = (rtemp[9] ^ inpb[8] ^ (inpa[8] ^ bSub)) ^ bSub;
             end
             else begin
                 result = rtemp[16:1];
-                cout   = rtemp[17];
+                cout   = rtemp[17] ^ bSub;
             end
 
             rm  = isByte ? rtemp[8] : rtemp[16];
