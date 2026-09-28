@@ -83,7 +83,7 @@
 	Define USE_E_CLKEN will output two signals that generate a single cycle pulse just before the raising and falling edges of E.
 	Use this when you need to generate changes that must be simultaneous with these edges.
 	Most systems don't need this. Note that these signals are not registered. 
- */
+*/
 
 // Define this to run a self contained compilation test build
 // `define FX68K_TEST
@@ -103,9 +103,11 @@ module fx68k
     output        oRESETn,
     output        oHALTEDn,
     // 6800 peripheral access
-    output logic  E,        // E clock
-    output        E_rise,   // E clock rising edge
-    output        E_fall,   // E clock falling edge
+    output        E,        // E clock
+`ifdef USE_E_CLKEN
+    output        E_PosClkEn, // E clock rising edge
+    output        E_NegClkEn, // E clock falling edge
+`endif /* USE_E_CLKEN */
     input         VPAn,     // Valid peripheral address
     output        VMAn,     // Valid memory address
     // Control signals
@@ -602,39 +604,49 @@ module fx68k
     assign enErrClk = iAddrErr | iBusErr;
     assign wClk = waitBusCycle | ~BeI | iAddrErr | Err6591;
 
-    // E clock and counter, VMA
-    reg [3:0] eCntr;
+    // E clock edges and counter, VMA
+    reg       rEPos;
+    reg       rENeg;
+    reg [3:0] rECtr;
     reg       rVma;
 
     assign VMAn = rVma;
 
     // Internal stop just one cycle before E falling edge
-    wire xVma = ~rVma & (eCntr == 8);
+    wire xVma = ~rVma & (rECtr == 4'd10);
 
     always_ff @(posedge clk) begin
 
         if (Clks.pwrUp) begin
-            E     <= 1'b0;
-            eCntr <= 4'd0;
+            rECtr <= 4'd2;
             rVma  <= 1'b1;
         end
         
-        // Cycles counter
-        if (Clks.enPhi2) begin
-            eCntr <= (eCntr == 4'd9) ? 4'd0 : eCntr + 4'd1;
+        // E clock edges
+        if (Clks.enPhi1) begin
+            rEPos <= (rECtr ==  4'd7) ? 1'b1 : 1'b0;
+            rENeg <= (rECtr == 4'd11) ? 1'b1 : 1'b0;
         end
         
-        // E clock generation
-        E <= (E | E_rise) & ~E_fall;
-
-        if (Clks.enPhi2 & addrOe & ~Vpai & (eCntr == 4'd3))
+        // Cycles counter
+        // 2 -> 7 : E low, 8 -> 11 : E high
+        if (Clks.enPhi2) begin
+            rECtr <= (rENeg) ? 4'd2 : rECtr + 4'd1;
+        end
+        
+        if (Clks.enPhi2 & addrOe & ~Vpai & (rECtr == 4'd5))
             rVma <= 1'b0;
-        else if (Clks.enPhi1 & eCntr == 4'd0)
+        else if (Clks.enPhi1 & (rECtr == 4'd2))
             rVma <= 1'b1;
     end
+    
+    // E clock generation : cycle counter msb
+    assign E = rECtr[3];
 
-    assign E_rise = (eCntr == 4'd5) ? Clks.enPhi2 : 1'b0;
-    assign E_fall = (eCntr == 4'd9) ? Clks.enPhi2 : 1'b0;
+`ifdef USE_E_CLKEN
+    assign E_PosClkEn = rEPos & Clks.enPhi2;
+    assign E_NegClkEn = rENeg & Clks.enPhi2;
+`endif
 
     always_ff @(posedge clk) begin
 
@@ -2968,8 +2980,10 @@ module fx68kTop
     output        oHALTEDn,
     //
     output        E,
-    output        E_rise,
-    output        E_fall,
+`ifdef USE_E_CLKEN
+    output        E_PosClkEn,
+    output        E_NegClkEn,
+`endif /* USE_E_CLKEN */
     input         VPAn,
     output        VMAn,
     //
@@ -3024,7 +3038,11 @@ module fx68kTop
         .pwrUp (extReset),
         .oRESETn, .oHALTEDn,
 
-        .E, .E_rise, .E_fall,
+        .E,
+`ifdef USE_E_CLKEN
+        .E_PosClkEn,
+        .E_NegClkEn,
+`endif /* USE_E_CLKEN */
         .VPAn, .VMAn,
         
         .ASn, .eRWn, .LDSn, .UDSn,
