@@ -1,3 +1,5 @@
+`timescale 1 ns / 1 ns
+
 module fx68kRom
 #(
     parameter bit     OUTPUT_REG = 1,
