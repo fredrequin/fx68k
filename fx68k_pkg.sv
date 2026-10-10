@@ -13,7 +13,7 @@ localparam UROM_DEPTH = 1024;
 
 localparam NADDR_WIDTH = 9;
 localparam NANO_WIDTH = 68;
-localparam NANO_DEPTH = 336;
+localparam NANO_DEPTH = 512;
 
 localparam
     HALT1_NMA = 'h001,
