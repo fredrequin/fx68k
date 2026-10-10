@@ -23,6 +23,9 @@ VERILATOR_OPT="\
  -Wno-COMBDLY\
 "
 
+#Comment this line if running verilator v4
+V5_OPT="--no-timing --no-assert-case"
+
 #Comment this line to disable VCD generation
 TRACE_OPT="-trace"
 
@@ -32,7 +35,7 @@ CPP_FILES="\
  verilated_dpi.cpp\
 "
 
-verilator tb_top.v $COMPILE_OPT $TRACE_OPT $VERILATOR_OPT --top-module $TOP_FILE --exe $CPP_FILES
+verilator tb_top.v $COMPILE_OPT $TRACE_OPT $VERILATOR_OPT $V5_OPT --top-module $TOP_FILE --exe $CPP_FILES
 
 cd ./obj_dir
 make -j -f V$TOP_FILE.mk V$TOP_FILE

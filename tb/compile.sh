@@ -10,8 +10,6 @@ COMPILE_OPT="-CFLAGS -DVM_PREFIX=V"$TOP_FILE" -CFLAGS -O3 -CFLAGS -Wno-attribute
 VERILATOR_OPT="\
  --cc -O3\
  --public-flat-rw\
- --no-timing\
- --no-assert-case\
  -Wno-WIDTH\
  -Wno-CASEINCOMPLETE\
  -Wno-UNOPTFLAT\
@@ -26,6 +24,9 @@ VERILATOR_OPT="\
  -Wno-COMBDLY\
 "
 
+#Comment this line if running verilator v4
+V5_OPT="--no-timing --no-assert-case"
+
 #Comment this line to disable VCD generation
 TRACE_OPT="-trace"
 
@@ -35,11 +36,11 @@ CPP_FILES="\
  verilated_dpi.cpp\
 "
 
-verilator tb_top.v $COMPILE_OPT $TRACE_OPT $VERILATOR_OPT --top-module $TOP_FILE --exe $CPP_FILES
+verilator tb_top.v $COMPILE_OPT $TRACE_OPT $VERILATOR_OPT $V5_OPT --top-module $TOP_FILE --exe $CPP_FILES
 
 cd ./obj_dir
 make -j -f V$TOP_FILE.mk V$TOP_FILE
 cd ..
 
-ln -s -f ../microrom.mem microrom.mem
-ln -s -f ../nanorom.mem nanorom.mem
+cp ../microrom.mem microrom.mem
+cp ../nanorom.mem nanorom.mem
