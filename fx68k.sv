@@ -2212,24 +2212,32 @@ endmodule
 // used by MOVEM regmask
 // this might benefit from device specific features
 // MOVEM doesn't need speed, will read the result 2 CPU cycles after each update.
-module pren( mask, hbit);
-   parameter size = 16;
-   parameter outbits = 4;
+module pren
+(
+    input      [15:0] mask,
+    output reg  [3:0] hbit
+);
 
-   input [size-1:0] mask;
-   output reg [outbits-1:0] hbit;
-   // output reg idle;
-
-   always @( mask) begin
-      integer i;
-      hbit = 0;
-      // idle = 1;
-      for( i = size-1; i >= 0; i = i - 1) begin
-          if (mask[i]) begin
-             hbit = i[outbits-1:0];
-             // idle = 0;
-         end
-      end
+    always @(mask) begin
+        casez (mask)
+            16'b???????????????1 : hbit =  4'd0;
+            16'b??????????????10 : hbit =  4'd1;
+            16'b?????????????100 : hbit =  4'd2;
+            16'b????????????1000 : hbit =  4'd3;
+            16'b???????????10000 : hbit =  4'd4;
+            16'b??????????100000 : hbit =  4'd5;
+            16'b?????????1000000 : hbit =  4'd6;
+            16'b????????10000000 : hbit =  4'd7;
+            16'b???????100000000 : hbit =  4'd8;
+            16'b??????1000000000 : hbit =  4'd9;
+            16'b?????10000000000 : hbit = 4'd10;
+            16'b????100000000000 : hbit = 4'd11;
+            16'b???1000000000000 : hbit = 4'd12;
+            16'b??10000000000000 : hbit = 4'd13;
+            16'b?100000000000000 : hbit = 4'd14;
+            16'b1000000000000000 : hbit = 4'd15;
+            16'b0000000000000000 : hbit =  4'd0;
+        endcase
    end
 
 endmodule
