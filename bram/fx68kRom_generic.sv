@@ -19,7 +19,7 @@ module fx68kRom
 // Inferred ROM block
 //=============================================================================
 
-    logic [DATA_WIDTH-1:0] rom [0:(1 << ADDR_WIDTH)-1];
+    (* syn_ramstyle = "block_ram" *) logic [DATA_WIDTH-1:0] rom [0:(1 << ADDR_WIDTH)-1];
 
 //=============================================================================
 // ROM content

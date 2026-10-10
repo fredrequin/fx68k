@@ -5,14 +5,14 @@ module fx68kRegs
     input          clk,
     input          clk_ena,
 
-    // Port d'écriture A
+    // Read/write port A
     input    [4:0] address_a,
     input          wren_a,
     input    [3:0] byteena_a,
     input   [31:0] data_a,
     output  [31:0] q_a,
 
-    // Port d'écriture B
+    // Read/write port B
     input    [4:0] address_b,
     input          wren_b,
     input    [3:0] byteena_b,
@@ -25,61 +25,49 @@ module fx68kRegs
 //=============================================================================
 
 // A : Write, A : Read
-(* ram_style = "distributed" *) reg [15:0] r_ram_L_aa [0:31]; // 16 SLICEs
-(* ram_style = "distributed" *) reg  [7:0] r_ram_W_aa [0:31]; // 8 SLICEs
-(* ram_style = "distributed" *) reg  [7:0] r_ram_B_aa [0:31]; // 8 SLICEs
+(* syn_ramstyle = "distributed" *) reg [15:0] r_ram_L_aa [0:31]; // 16 SLICEs
+(* syn_ramstyle = "distributed" *) reg  [7:0] r_ram_W_aa [0:31]; // 8 SLICEs
+(* syn_ramstyle = "distributed" *) reg  [7:0] r_ram_B_aa [0:31]; // 8 SLICEs
 // A : Write, B : Read
-(* ram_style = "distributed" *) reg [15:0] r_ram_L_ab [0:31];
-(* ram_style = "distributed" *) reg  [7:0] r_ram_W_ab [0:31];
-(* ram_style = "distributed" *) reg  [7:0] r_ram_B_ab [0:31];
+(* syn_ramstyle = "distributed" *) reg [15:0] r_ram_L_ab [0:31];
+(* syn_ramstyle = "distributed" *) reg  [7:0] r_ram_W_ab [0:31];
+(* syn_ramstyle = "distributed" *) reg  [7:0] r_ram_B_ab [0:31];
 // B : Write, A : Read
-(* ram_style = "distributed" *) reg [15:0] r_ram_L_ba [0:31];
-(* ram_style = "distributed" *) reg  [7:0] r_ram_W_ba [0:31];
-(* ram_style = "distributed" *) reg  [7:0] r_ram_B_ba [0:31];
+(* syn_ramstyle = "distributed" *) reg [15:0] r_ram_L_ba [0:31];
+(* syn_ramstyle = "distributed" *) reg  [7:0] r_ram_W_ba [0:31];
+(* syn_ramstyle = "distributed" *) reg  [7:0] r_ram_B_ba [0:31];
 // B : Write, B : Read
-(* ram_style = "distributed" *) reg [15:0] r_ram_L_bb [0:31];
-(* ram_style = "distributed" *) reg  [7:0] r_ram_W_bb [0:31];
-(* ram_style = "distributed" *) reg  [7:0] r_ram_B_bb [0:31];
+(* syn_ramstyle = "distributed" *) reg [15:0] r_ram_L_bb [0:31];
+(* syn_ramstyle = "distributed" *) reg  [7:0] r_ram_W_bb [0:31];
+(* syn_ramstyle = "distributed" *) reg  [7:0] r_ram_B_bb [0:31];
 
 //=============================================================================
 // Last value select (12 SLICEs)
 //=============================================================================
 
-(* ram_style = "distributed" *) reg [2:0] r_lvs_aa [0:31]; // 3 SLICEs
-(* ram_style = "distributed" *) reg [2:0] r_lvs_ab [0:31];
-(* ram_style = "distributed" *) reg [2:0] r_lvs_ba [0:31];
-(* ram_style = "distributed" *) reg [2:0] r_lvs_bb [0:31];
+(* syn_ramstyle = "distributed" *) reg [2:0] r_lvs_aa [0:31]; // 3 SLICEs
+(* syn_ramstyle = "distributed" *) reg [2:0] r_lvs_ab [0:31];
+(* syn_ramstyle = "distributed" *) reg [2:0] r_lvs_ba [0:31];
+(* syn_ramstyle = "distributed" *) reg [2:0] r_lvs_bb [0:31];
 
     always_ff @(posedge clk) begin : LAST_VALUE_SEL
 
         if (clk_ena & wren_a) begin
-            if (byteena_a[0]) begin
-                r_lvs_aa[address_a][0] <= r_lvs_ba[address_a][0];
-                r_lvs_ab[address_a][0] <= r_lvs_ba[address_a][0];
-            end
-            if (byteena_a[1]) begin
-                r_lvs_aa[address_a][1] <= r_lvs_ba[address_a][1];
-                r_lvs_ab[address_a][1] <= r_lvs_ba[address_a][1];
-            end
-            if (byteena_a[2]) begin
-                r_lvs_aa[address_a][2] <= r_lvs_ba[address_a][2];
-                r_lvs_ab[address_a][2] <= r_lvs_ba[address_a][2];
-            end
+            r_lvs_aa[address_a][0] <= (byteena_a[0]) ? r_lvs_ba[address_a][0] : r_lvs_aa[address_a][0];
+            r_lvs_ab[address_a][0] <= (byteena_a[0]) ? r_lvs_ba[address_a][0] : r_lvs_aa[address_a][0];
+            r_lvs_aa[address_a][1] <= (byteena_a[1]) ? r_lvs_ba[address_a][1] : r_lvs_aa[address_a][1];
+            r_lvs_ab[address_a][1] <= (byteena_a[1]) ? r_lvs_ba[address_a][1] : r_lvs_aa[address_a][1];
+            r_lvs_aa[address_a][2] <= (byteena_a[2]) ? r_lvs_ba[address_a][2] : r_lvs_aa[address_a][2];
+            r_lvs_ab[address_a][2] <= (byteena_a[2]) ? r_lvs_ba[address_a][2] : r_lvs_aa[address_a][2];
         end
 
         if (clk_ena & wren_b) begin
-            if (byteena_b[0]) begin
-                r_lvs_ba[address_b][0] <= ~r_lvs_ab[address_b][0];
-                r_lvs_bb[address_b][0] <= ~r_lvs_ab[address_b][0];
-            end
-            if (byteena_b[1]) begin
-                r_lvs_ba[address_b][1] <= ~r_lvs_ab[address_b][1];
-                r_lvs_bb[address_b][1] <= ~r_lvs_ab[address_b][1];
-            end
-            if (byteena_b[2]) begin
-                r_lvs_ba[address_b][2] <= ~r_lvs_ab[address_b][2];
-                r_lvs_bb[address_b][2] <= ~r_lvs_ab[address_b][2];
-            end
+            r_lvs_ba[address_b][0] <= (byteena_b[0]) ? ~r_lvs_ab[address_b][0] : r_lvs_bb[address_b][0];
+            r_lvs_bb[address_b][0] <= (byteena_b[0]) ? ~r_lvs_ab[address_b][0] : r_lvs_bb[address_b][0];
+            r_lvs_ba[address_b][1] <= (byteena_b[1]) ? ~r_lvs_ab[address_b][1] : r_lvs_bb[address_b][1];
+            r_lvs_bb[address_b][1] <= (byteena_b[1]) ? ~r_lvs_ab[address_b][1] : r_lvs_bb[address_b][1];
+            r_lvs_ba[address_b][2] <= (byteena_b[2]) ? ~r_lvs_ab[address_b][2] : r_lvs_bb[address_b][2];
+            r_lvs_bb[address_b][2] <= (byteena_b[2]) ? ~r_lvs_ab[address_b][2] : r_lvs_bb[address_b][2];
         end
     end
 
